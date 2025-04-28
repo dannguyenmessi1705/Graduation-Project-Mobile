@@ -1,0 +1,19 @@
+// Ensure babel.config.js uses CommonJS syntax
+module.exports = (api) => {
+  api.cache(true);
+  return {
+    presets: ["babel-preset-expo"],
+    plugins: [
+      [
+        "module-resolver",
+        {
+          root: ["./"],
+          alias: {
+            "@": "./",
+          },
+        },
+      ],
+      "react-native-reanimated/plugin",
+    ],
+  };
+};
