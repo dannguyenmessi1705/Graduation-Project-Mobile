@@ -628,3 +628,28 @@ export async function getCommentDetails(
 
   return { data: foundComment };
 }
+
+export async function login(
+  username: string,
+  password: string
+): Promise<{ data: { access_token: string } }> {
+  await delay(500);
+
+  // Check if username exists in mockUsers
+  const user = mockUsers.find((u) => u.username === username);
+
+  // For mock purposes, we'll accept any password for valid usernames,
+  // but in a real implementation you'd check the password too
+  if (!user) {
+    throw new Error("Invalid username or password");
+  }
+
+  // Generate a mock access token
+  const access_token = `mock_token_${user.id}_${Date.now()}`;
+
+  return {
+    data: {
+      access_token,
+    },
+  };
+}
