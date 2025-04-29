@@ -10,6 +10,9 @@ import PostDetailScreen from "@/screens/PostDetailScreen";
 import EditProfileScreen from "@/screens/EditProfileScreen";
 import UserProfileScreen from "@/screens/UserProfileScreen";
 import AIChatScreen from "@/screens/AIChatScreen";
+import ChatRoomsScreen from "@/screens/ChatRoomsScreen";
+import ChatRoomScreen from "@/screens/ChatRoomScreen";
+import NewChatScreen from "@/screens/NewChatScreen";
 import LoginScreen from "@/screens/LoginScreen";
 import RegisterScreen from "@/screens/RegisterScreen";
 import ForgotPasswordScreen from "@/screens/ForgotPasswordScreen";
@@ -35,6 +38,8 @@ function HomeTabs() {
             iconName = focused ? "time" : "time-outline";
           } else if (route.name === "Profile") {
             iconName = focused ? "person" : "person-outline";
+          } else if (route.name === "Chats") {
+            iconName = focused ? "chatbubbles" : "chatbubbles-outline";
           }
 
           return (
@@ -55,6 +60,7 @@ function HomeTabs() {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Latest" component={LatestScreen} />
+      <Tab.Screen name="Chats" component={ChatRoomsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
   );
@@ -90,6 +96,16 @@ export default function AppNavigator() {
         name="AIChat"
         component={AIChatScreen}
         options={{ title: "AI Assistant" }}
+      />
+      <Stack.Screen
+        name="ChatRoom"
+        component={ChatRoomScreen}
+        options={{ title: "Chat" }}
+      />
+      <Stack.Screen
+        name="NewChat"
+        component={NewChatScreen}
+        options={{ title: "New Conversation" }}
       />
 
       <Stack.Screen

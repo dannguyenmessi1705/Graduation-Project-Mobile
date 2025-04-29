@@ -6,7 +6,12 @@
       "@/*": ["./*"]
     },
     "module": "ESNext",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
   "ts-node": {
     "esm": true

@@ -1,63 +1,66 @@
-import { NavigationContainer } from "@react-navigation/native";
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, View, Text } from "react-native";
-import { useEffect, useState } from "react";
+import React from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
+import { StatusBar } from "expo-status-bar";
+import { NavigationContainer } from "@react-navigation/native";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { TopicProvider } from "./contexts/TopicContext";
+import { ChatProvider } from "./contexts/ChatContext";
 import AppNavigator from "./navigation/AppNavigator";
-import { initializeEnvironmentVariables } from "./lib/env";
+import { LogBox } from "react-native";
+import Toast, { BaseToast, ErrorToast } from "react-native-toast-message";
+
+LogBox.ignoreLogs([
+  "Warning: Failed prop type: Invalid prop `textStyle` of type `array` supplied to `Cell`, expected `object`.",
+]);
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Khởi tạo biến môi trường khi ứng dụng khởi động
-  useEffect(() => {
-    async function initialize() {
-      try {
-        await initializeEnvironmentVariables();
-      } catch (error) {
-        console.error("Failed to initialize environment variables:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    initialize();
-  }, []);
-
-  if (isLoading) {
-    return (
-      <View style={[styles.container, { backgroundColor: "#fff" }]}>
-        <Text>Đang khởi tạo...</Text>
-      </View>
-    );
-  }
+  const toastConfig = {
+    success: (props) => (
+      <BaseToast
+        {...props}
+        style={{ borderLeftColor: "#4BB543" }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
+        text1Style={{
+          fontSize: 16,
+          fontWeight: "600",
+        }}
+        text2Style={{
+          fontSize: 14,
+        }}
+      />
+    ),
+    error: (props) => (
+      <ErrorToast
+        {...props}
+        style={{ borderLeftColor: "#FF3B30" }}
+        contentContainerStyle={{ paddingHorizontal: 15 }}
+        text1Style={{
+          fontSize: 16,
+          fontWeight: "600",
+        }}
+        text2Style={{
+          fontSize: 14,
+        }}
+      />
+    ),
+  };
 
   return (
     <SafeAreaProvider>
+      <StatusBar style="auto" />
       <ThemeProvider>
         <AuthProvider>
           <TopicProvider>
-            <NavigationContainer>
-              <StatusBar style="auto" />
-              <AppNavigator />
-              <Toast />
-            </NavigationContainer>
+            <ChatProvider>
+              <NavigationContainer>
+                <AppNavigator />
+              </NavigationContainer>
+              <Toast config={toastConfig} />
+            </ChatProvider>
           </TopicProvider>
         </AuthProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
