@@ -293,3 +293,29 @@ export async function login(
     throw error;
   }
 }
+
+export async function requestResetPassword(username: string): Promise<void> {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/users/reset/password?username=${username}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(
+        errorData.status?.message || "Failed to request password reset"
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Password reset request error:", error);
+    throw error;
+  }
+}

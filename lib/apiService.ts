@@ -95,3 +95,7 @@ export const getCommentDetails = (
 
 export const login = (...args: Parameters<typeof realApi.login>) =>
   apiProxy.login(...args);
+
+export const requestResetPassword = (
+  ...args: Parameters<typeof realApi.requestResetPassword>
+) => apiProxy.requestResetPassword(...args);

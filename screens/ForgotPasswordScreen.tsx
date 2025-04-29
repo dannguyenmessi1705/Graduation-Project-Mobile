@@ -12,35 +12,30 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { login } from "@/lib/apiService";
+import { requestResetPassword } from "@/lib/apiService";
 import Toast from "react-native-toast-message";
 
-// Define the navigation type for LoginScreen
 type RootStackParamList = {
-  Main: undefined;
-  Register: undefined;
-  ForgotPassword: undefined;
-  // Add other screens as needed
+  Login: undefined;
 };
 
-type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type ForgotPasswordScreenNavigationProp =
+  NativeStackNavigationProp<RootStackParamList>;
 
-export default function LoginScreen() {
+export default function ForgotPasswordScreen() {
   const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const navigation = useNavigation<LoginScreenNavigationProp>();
-  const { login: authLogin } = useAuth();
+  const [success, setSuccess] = useState(false);
+  const navigation = useNavigation<ForgotPasswordScreenNavigationProp>();
   const { colors } = useTheme();
 
-  const handleLogin = async () => {
-    if (!username || !password) {
+  const handleResetPassword = async () => {
+    if (!username) {
       Toast.show({
         type: "error",
         text1: "Error",
-        text2: "Please enter both username and password",
+        text2: "Please enter your username or email",
       });
       return;
     }
@@ -48,48 +43,25 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      const response = await login(username, password);
-      await authLogin(response.data.access_token);
+      await requestResetPassword(username);
+      setSuccess(true);
       Toast.show({
         type: "success",
-        text1: "Login successful",
-        text2: "You have been successfully logged in.",
-      });
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "Main" }],
-      });
-
-      // if (response.ok) {
-      //   await login(data.data.access_token);
-      //   Toast.show({
-      //     type: "success",
-      //     text1: "Login successful",
-      //     text2: "You have been successfully logged in.",
-      //   });
-      // } else {
-      //   throw new Error(data.status.message || "Login failed");
-      // }
-    } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Login failed",
+        text1: "Request submitted",
         text2:
-          error instanceof Error
-            ? error.message
-            : "An error occurred during login.",
+          "If the account exists, password reset instructions will be sent",
+      });
+    } catch (error) {
+      // We don't show specific errors to avoid leaking information about account existence
+      Toast.show({
+        type: "info",
+        text1: "Request processed",
+        text2:
+          "If the account exists, password reset instructions will be sent",
       });
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const navigateToRegister = () => {
-    navigation.navigate("Register");
-  };
-
-  const navigateToForgotPassword = () => {
-    navigation.navigate("ForgotPassword");
   };
 
   const styles = StyleSheet.create({
@@ -114,9 +86,11 @@ export default function LoginScreen() {
       color: colors.primary,
       marginBottom: 10,
     },
-    tagline: {
-      fontSize: 16,
-      color: colors.mutedText,
+    title: {
+      fontSize: 24,
+      fontWeight: "bold",
+      color: colors.text,
+      marginBottom: 20,
       textAlign: "center",
     },
     formGroup: {
@@ -137,42 +111,65 @@ export default function LoginScreen() {
       fontSize: 16,
       color: colors.text,
     },
-    forgotPassword: {
-      alignSelf: "flex-end",
-      marginBottom: 20,
-    },
-    forgotPasswordText: {
-      color: colors.primary,
-      fontSize: 14,
-    },
-    loginButton: {
+    resetButton: {
       backgroundColor: colors.primary,
       padding: 16,
       borderRadius: 8,
       alignItems: "center",
       marginBottom: 20,
     },
-    loginButtonText: {
+    resetButtonText: {
       color: colors.primaryText,
       fontSize: 16,
       fontWeight: "600",
     },
-    registerContainer: {
+    backToLoginContainer: {
       flexDirection: "row",
       justifyContent: "center",
       marginTop: 20,
     },
-    registerText: {
+    backToLoginText: {
       color: colors.text,
       fontSize: 14,
     },
-    registerLink: {
+    backToLoginLink: {
       color: colors.primary,
       fontSize: 14,
       fontWeight: "600",
       marginLeft: 5,
     },
+    successContainer: {
+      padding: 20,
+      alignItems: "center",
+    },
+    successText: {
+      fontSize: 16,
+      color: colors.text,
+      textAlign: "center",
+      marginBottom: 20,
+      lineHeight: 24,
+    },
   });
+
+  if (success) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.successContainer}>
+          <Text style={styles.title}>Check your email</Text>
+          <Text style={styles.successText}>
+            If an account exists with the username you provided, we've sent
+            instructions to reset your password.
+          </Text>
+          <TouchableOpacity
+            style={styles.resetButton}
+            onPress={() => navigation.navigate("Login")}
+          >
+            <Text style={styles.resetButtonText}>Back to Login</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -183,14 +180,14 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <View style={styles.logoContainer}>
-            <TouchableOpacity
-              onLongPress={() => navigation.navigate("Debug" as never)}
-              delayLongPress={2000}
-            >
-              <Text style={styles.logo}>Z'Forum</Text>
-            </TouchableOpacity>
-            <Text style={styles.tagline}>Connect with your community</Text>
+            <Text style={styles.logo}>Z'Forum</Text>
           </View>
+
+          <Text style={styles.title}>Reset Password</Text>
+          <Text style={{ ...styles.successText, marginBottom: 30 }}>
+            Enter your username and we'll send you instructions to reset your
+            password.
+          </Text>
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Username</Text>
@@ -204,41 +201,22 @@ export default function LoginScreen() {
             />
           </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter your password"
-              placeholderTextColor={colors.mutedText}
-              secureTextEntry
-            />
-          </View>
-
           <TouchableOpacity
-            style={styles.forgotPassword}
-            onPress={navigateToForgotPassword}
-          >
-            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={handleLogin}
+            style={styles.resetButton}
+            onPress={handleResetPassword}
             disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator size="small" color={colors.primaryText} />
             ) : (
-              <Text style={styles.loginButtonText}>Login</Text>
+              <Text style={styles.resetButtonText}>Reset Password</Text>
             )}
           </TouchableOpacity>
 
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don't have an account?</Text>
-            <TouchableOpacity onPress={navigateToRegister}>
-              <Text style={styles.registerLink}>Register</Text>
+          <View style={styles.backToLoginContainer}>
+            <Text style={styles.backToLoginText}>Remember your password?</Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+              <Text style={styles.backToLoginLink}>Login</Text>
             </TouchableOpacity>
           </View>
         </View>

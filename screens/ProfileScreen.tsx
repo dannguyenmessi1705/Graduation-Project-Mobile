@@ -7,7 +7,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useIsFocused } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -17,9 +17,10 @@ export default function ProfileScreen() {
   const { userDetails, logout, isLoggedIn } = useAuth();
   const navigation = useNavigation();
   const { colors, theme, setTheme } = useTheme();
+  const isFocused = useIsFocused();
 
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (isFocused && !isLoggedIn) {
       Alert.alert(
         "Authentication Required",
         "You need to be logged in to view your profile.",
@@ -37,7 +38,7 @@ export default function ProfileScreen() {
         { cancelable: false }
       );
     }
-  }, [isLoggedIn, navigation]);
+  }, [isLoggedIn, navigation, isFocused]);
 
   const handleLogout = () => {
     Alert.alert(

@@ -92,7 +92,7 @@ export default function CreatePostScreen() {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images", "livePhotos", "videos"],
       allowsEditing: true,
       quality: 0.8,
     });

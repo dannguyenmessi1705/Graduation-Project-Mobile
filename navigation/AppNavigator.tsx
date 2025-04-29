@@ -12,6 +12,7 @@ import UserProfileScreen from "@/screens/UserProfileScreen";
 import AIChatScreen from "@/screens/AIChatScreen";
 import LoginScreen from "@/screens/LoginScreen";
 import RegisterScreen from "@/screens/RegisterScreen";
+import ForgotPasswordScreen from "@/screens/ForgotPasswordScreen";
 import CreatePostScreen from "@/screens/CreatePostScreen";
 import DebugScreen from "@/screens/DebugScreen";
 
@@ -97,6 +98,11 @@ export default function AppNavigator() {
         options={{ headerShown: false }}
       />
       <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen
+        name="ForgotPassword"
+        component={ForgotPasswordScreen}
+        options={{ title: "Reset Password" }}
+      />
       <Stack.Screen
         name="Debug"
         component={DebugScreen}
