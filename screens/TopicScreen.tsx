@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   View,
   FlatList,
@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Text,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -16,11 +17,12 @@ import { useTopicContext } from "../contexts/TopicContext";
 import { useAuth } from "../contexts/AuthContext";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import type { PostData } from "../types/PostData";
+import { useRequireAuth } from "@/lib/authUtils";
 
 // Define navigation types
 type RootStackParamList = {
   PostDetail: { id: string };
-  CreatePost: { topicId: string };
+  CreatePost: { topicId: string; topicName: string };
   Topic: { id: string; name: string };
 };
 
@@ -30,12 +32,15 @@ type TopicScreenRouteProp = RouteProp<RootStackParamList, "Topic">;
 export default function TopicScreen() {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [hasMoreData, setHasMoreData] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const navigation = useNavigation<TopicScreenNavigationProp>();
   const route = useRoute<TopicScreenRouteProp>();
   const { colors } = useTheme();
   const { setTopicName } = useTopicContext();
   const { isLoggedIn } = useAuth();
+  const requireAuth = useRequireAuth();
 
   const { id, name } = route.params;
 
@@ -44,29 +49,63 @@ export default function TopicScreen() {
       setTopicName(name);
       navigation.setOptions({ title: name });
     }
-    fetchPosts();
-  }, [id, currentPage, name]);
+  }, [name, navigation, setTopicName]);
 
-  const fetchPosts = async () => {
-    setIsLoading(true);
-    try {
-      const response = await getPosts(id, currentPage);
-      setPosts((prevPosts) =>
-        currentPage === 0 ? response.data : [...prevPosts, ...response.data]
-      );
-    } catch (error) {
-      console.error("Failed to fetch posts:", error);
-    } finally {
-      setIsLoading(false);
+  const fetchPosts = useCallback(
+    async (page = 0, refresh = false) => {
+      if (refresh) {
+        setIsRefreshing(true);
+      } else if (!refresh && page === 0) {
+        setIsLoading(true);
+      }
+      try {
+        const response = await getPosts(id, page);
+        const newPosts = response.data;
+
+        if (newPosts.length === 0) {
+          setHasMoreData(false);
+        }
+        if (page === 0 || refresh) {
+          setPosts(newPosts);
+        } else {
+          setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch posts:", error);
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [id]
+  );
+
+  useEffect(() => {
+    fetchPosts(0);
+  }, [fetchPosts]);
+
+  const handleRefresh = useCallback(() => {
+    setCurrentPage(0);
+    setHasMoreData(true);
+    fetchPosts(0, true);
+  }, [fetchPosts]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && !isRefreshing && hasMoreData) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      fetchPosts(nextPage);
     }
-  };
+  }, [isLoading, isRefreshing, hasMoreData, currentPage, fetchPosts]);
 
   const handlePostPress = (post: PostData) => {
     navigation.navigate("PostDetail", { id: post.id });
   };
 
   const handleCreatePost = () => {
-    navigation.navigate("CreatePost", { topicId: id });
+    if (requireAuth(isLoggedIn, "create posts")) {
+      navigation.navigate("CreatePost", { topicId: id, topicName: name });
+    }
   };
 
   const renderItem = ({ item }: { item: PostData }) => (
@@ -88,32 +127,30 @@ export default function TopicScreen() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      {isLoggedIn && (
-        <TouchableOpacity
-          style={[styles.createButton, { backgroundColor: colors.primary }]}
-          onPress={handleCreatePost}
-        >
-          <Ionicons name="add" size={24} color={colors.primaryText} />
-          <Text
-            style={[styles.createButtonText, { color: colors.primaryText }]}
-          >
-            Create Post
-          </Text>
-        </TouchableOpacity>
-      )}
+      <TouchableOpacity
+        style={[styles.createButton, { backgroundColor: colors.primary }]}
+        onPress={handleCreatePost}
+      >
+        <Ionicons name="add" size={24} color={colors.primaryText} />
+        <Text style={[styles.createButtonText, { color: colors.primaryText }]}>
+          Create Post
+        </Text>
+      </TouchableOpacity>
 
       <FlatList
         data={posts}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        onRefresh={fetchPosts}
-        refreshing={isLoading}
-        onEndReached={() => {
-          if (!isLoading) {
-            setCurrentPage((prev) => prev + 1);
-          }
-        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
+        onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
           isLoading && posts.length > 0 ? (

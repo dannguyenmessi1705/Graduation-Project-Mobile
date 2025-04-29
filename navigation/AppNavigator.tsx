@@ -1,6 +1,5 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import HomeScreen from "@/screens/HomeScreen";
@@ -60,7 +59,6 @@ function HomeTabs() {
 }
 
 export default function AppNavigator() {
-  const { isLoggedIn } = useAuth();
   const { colors } = useTheme();
 
   return (
@@ -76,34 +74,28 @@ export default function AppNavigator() {
         },
       }}
     >
-      {isLoggedIn ? (
-        <>
-          <Stack.Screen
-            name="Main"
-            component={HomeTabs}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="Topic" component={TopicScreen} />
-          <Stack.Screen name="PostDetail" component={PostDetailScreen} />
-          <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-          <Stack.Screen name="UserProfile" component={UserProfileScreen} />
-          <Stack.Screen name="CreatePost" component={CreatePostScreen} />
-          <Stack.Screen
-            name="AIChat"
-            component={AIChatScreen}
-            options={{ title: "AI Assistant" }}
-          />
-        </>
-      ) : (
-        <>
-          <Stack.Screen
-            name="Login"
-            component={LoginScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-        </>
-      )}
+      <Stack.Screen
+        name="Main"
+        component={HomeTabs}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen name="Topic" component={TopicScreen} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+      <Stack.Screen name="UserProfile" component={UserProfileScreen} />
+      <Stack.Screen name="CreatePost" component={CreatePostScreen} />
+      <Stack.Screen
+        name="AIChat"
+        component={AIChatScreen}
+        options={{ title: "AI Assistant" }}
+      />
+
+      <Stack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen name="Register" component={RegisterScreen} />
     </Stack.Navigator>
   );
 }

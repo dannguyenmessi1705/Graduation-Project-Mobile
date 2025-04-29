@@ -11,15 +11,25 @@ import { useRoute } from "@react-navigation/native";
 import { getUserDetails } from "../lib/api";
 import { useTheme } from "../contexts/ThemeContext";
 import type { UserDetails } from "../types/UserData";
+import { useRequireAuth } from "../lib/authUtils";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function UserProfileScreen() {
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const route = useRoute();
   const { colors } = useTheme();
+  const { isLoggedIn } = useAuth();
+  const requireAuth = useRequireAuth();
 
   // @ts-ignore - Route params typing
   const { userId } = route.params;
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      requireAuth(isLoggedIn, "view user profiles");
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
     const fetchUserProfile = async () => {

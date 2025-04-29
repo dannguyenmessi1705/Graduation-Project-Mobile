@@ -3,6 +3,7 @@ import { createContext, useState, useContext, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
 import { getUserInfo } from "../lib/api";
 import type { UserInfo } from "../types/UserData";
+import { Alert } from "react-native";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -11,6 +12,7 @@ interface AuthContextType {
   register: (token: string) => Promise<void>;
   logout: () => Promise<void>;
   handleExpiredToken: () => void;
+  checkAuthAndRedirect: (navigation: any, actionName?: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -20,6 +22,7 @@ const AuthContext = createContext<AuthContextType>({
   register: async () => {},
   logout: async () => {},
   handleExpiredToken: () => {},
+  checkAuthAndRedirect: () => false,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -87,9 +90,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     logout();
   };
 
+  const checkAuthAndRedirect = (
+    navigation: any,
+    actionName = "this action"
+  ): boolean => {
+    if (isLoggedIn) {
+      return true;
+    }
+
+    Alert.alert(
+      "Authentication Required",
+      `You need to be logged in to ${actionName}.`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Login",
+          onPress: () => navigation.navigate("Login"),
+        },
+      ],
+      { cancelable: true }
+    );
+
+    return false;
+  };
+
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn, userDetails, login, register, logout, handleExpiredToken }}
+      value={{
+        isLoggedIn,
+        userDetails,
+        login,
+        register,
+        logout,
+        handleExpiredToken,
+        checkAuthAndRedirect,
+      }}
     >
       {children}
     </AuthContext.Provider>

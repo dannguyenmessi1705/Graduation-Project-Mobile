@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   View,
   ScrollView,
@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Text,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import {
@@ -27,6 +28,7 @@ export default function PostDetailScreen() {
   const [post, setPost] = useState<PostDetailData | null>(null);
   const [comments, setComments] = useState<CommentData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [userVote, setUserVote] = useState<"up" | "down" | null>(null);
   const route = useRoute();
   const { colors } = useTheme();
@@ -34,28 +36,40 @@ export default function PostDetailScreen() {
 
   const { id } = route.params as { id: string };
 
+  const fetchPostData = useCallback(
+    async (refresh = false) => {
+      if (refresh) {
+        setIsRefreshing(true);
+      } else {
+        setIsLoading(true);
+      }
+      try {
+        const [postData, commentsData] = await Promise.all([
+          getPostDetail(id),
+          getPostComments(id),
+        ]);
+        setPost(postData.data);
+        setComments(commentsData.data || []);
+      } catch (error) {
+        console.error("Failed to fetch post data:", error);
+        if (error instanceof Error && error.message === "TokenExpiredError") {
+          handleExpiredToken();
+        }
+      } finally {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [id, handleExpiredToken]
+  );
+  // Initial data load
   useEffect(() => {
     fetchPostData();
-  }, [id]);
+  }, [fetchPostData]);
 
-  const fetchPostData = async () => {
-    setIsLoading(true);
-    try {
-      const [postData, commentsData] = await Promise.all([
-        getPostDetail(id),
-        getPostComments(id),
-      ]);
-      setPost(postData.data);
-      setComments(commentsData.data || []);
-    } catch (error) {
-      console.error("Failed to fetch post data:", error);
-      if (error instanceof Error && error.message === "TokenExpiredError") {
-        handleExpiredToken();
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleRefresh = useCallback(() => {
+    fetchPostData(true);
+  }, [fetchPostData]);
 
   const handleVote = async (voteType: "up" | "down") => {
     if (!post || !isLoggedIn) return;
@@ -128,7 +142,7 @@ export default function PostDetailScreen() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !post) {
     return (
       <View
         style={[
@@ -155,6 +169,14 @@ export default function PostDetailScreen() {
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.contentContainer}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
+          colors={[colors.primary]}
+          tintColor={colors.primary}
+        />
+      }
     >
       <View style={[styles.postCard, { backgroundColor: colors.card }]}>
         <Text style={[styles.title, { color: colors.cardText }]}>
@@ -195,7 +217,6 @@ export default function PostDetailScreen() {
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => handleVote("up")}
-            disabled={!isLoggedIn}
           >
             <Ionicons
               name={userVote === "up" ? "thumbs-up" : "thumbs-up-outline"}
@@ -217,7 +238,6 @@ export default function PostDetailScreen() {
           <TouchableOpacity
             style={styles.actionButton}
             onPress={() => handleVote("down")}
-            disabled={!isLoggedIn}
           >
             <Ionicons
               name={userVote === "down" ? "thumbs-down" : "thumbs-down-outline"}

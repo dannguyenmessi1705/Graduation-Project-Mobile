@@ -1,5 +1,11 @@
-import { useState, useEffect } from "react";
-import { View, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { getTopics } from "../lib/api";
@@ -13,6 +19,7 @@ type RootStackParamList = {
     id: string;
     name: string;
   };
+  Login: undefined;
   // Add other screens as needed
 };
 
@@ -24,25 +31,56 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
 export default function HomeScreen() {
   const [topics, setTopics] = useState<TopicData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [hasMoreData, setHasMoreData] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const { colors } = useTheme();
 
-  useEffect(() => {
-    fetchTopics();
-  }, [currentPage]);
-
-  const fetchTopics = async () => {
-    setIsLoading(true);
+  const fetchTopics = useCallback(async (page = 0, refresh = false) => {
+    if (refresh) {
+      setIsRefreshing(true);
+    } else if (!refresh && page === 0) {
+      setIsLoading(true);
+    }
     try {
-      const response = await getTopics(currentPage);
-      setTopics(response.data);
+      const response = await getTopics(page);
+      const newTopics = response.data;
+
+      if (newTopics.length === 0) {
+        setHasMoreData(false);
+      }
+
+      if (page === 0 || refresh) {
+        setTopics(newTopics);
+      } else {
+        setTopics((prevTopics) => [...prevTopics, ...newTopics]);
+      }
     } catch (error) {
       console.error("Failed to fetch topics:", error);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchTopics(0);
+  }, [fetchTopics]);
+
+  const handleRefresh = useCallback(() => {
+    setCurrentPage(0);
+    setHasMoreData(true);
+    fetchTopics(0, true);
+  }, [fetchTopics]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && !isRefreshing && hasMoreData) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      fetchTopics(nextPage);
+    }
+  }, [isLoading, isRefreshing, hasMoreData, currentPage, fetchTopics]);
 
   const handleTopicPress = (topic: TopicData) => {
     navigation.navigate("Topic", {
@@ -75,14 +113,25 @@ export default function HomeScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        onRefresh={fetchTopics}
-        refreshing={isLoading}
-        onEndReached={() => {
-          if (!isLoading) {
-            setCurrentPage((prev) => prev + 1);
-          }
-        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
+        onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
+        ListEmptyComponent={
+          isLoading && topics.length > 0 ? (
+            <ActivityIndicator
+              size="small"
+              color={colors.primary}
+              style={styles.footerLoader}
+            />
+          ) : null
+        }
       />
     </View>
   );
@@ -99,5 +148,8 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 16,
+  },
+  footerLoader: {
+    marginVertical: 16,
   },
 });

@@ -1,5 +1,11 @@
-import { useState, useEffect } from "react";
-import { View, FlatList, StyleSheet, ActivityIndicator } from "react-native";
+import { useState, useEffect, useCallback } from "react";
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { getLatestPosts } from "../lib/api";
@@ -12,6 +18,7 @@ type RootStackParamList = {
   PostDetail: {
     id: string;
   };
+  Login: undefined;
   // Add other screens as needed
 };
 
@@ -23,27 +30,56 @@ type LatestScreenNavigationProp = NativeStackNavigationProp<
 export default function LatestScreen() {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [hasMoreData, setHasMoreData] = useState(true);
   const [currentPage, setCurrentPage] = useState(0);
   const navigation = useNavigation<LatestScreenNavigationProp>();
   const { colors } = useTheme();
 
-  useEffect(() => {
-    fetchLatestPosts();
-  }, [currentPage]);
-
-  const fetchLatestPosts = async () => {
-    setIsLoading(true);
+  const fetchLatestPosts = useCallback(async (page = 0, refresh = false) => {
+    if (refresh) {
+      setIsRefreshing(true);
+    } else if (!refresh && page === 0) {
+      setIsLoading(true);
+    }
     try {
-      const response = await getLatestPosts(currentPage);
-      setPosts((prevPosts) =>
-        currentPage === 0 ? response.data : [...prevPosts, ...response.data]
-      );
+      const response = await getLatestPosts(page);
+      const newPosts = response.data;
+
+      if (newPosts.length === 0) {
+        setHasMoreData(false);
+      }
+
+      if (page === 0 || refresh) {
+        setPosts(newPosts);
+      } else {
+        setPosts((prevPosts) => [...prevPosts, ...newPosts]);
+      }
     } catch (error) {
       console.error("Failed to fetch latest posts:", error);
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchLatestPosts(0);
+  }, [fetchLatestPosts]);
+
+  const handleRefresh = useCallback(() => {
+    setCurrentPage(0);
+    setHasMoreData(true);
+    fetchLatestPosts(0, true);
+  }, [fetchLatestPosts]);
+
+  const handleLoadMore = useCallback(() => {
+    if (!isLoading && !isRefreshing && hasMoreData) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      fetchLatestPosts(nextPage);
+    }
+  }, [isLoading, isRefreshing, hasMoreData, currentPage, fetchLatestPosts]);
 
   const handlePostPress = (post: PostData) => {
     navigation.navigate("PostDetail", { id: post.id });
@@ -73,13 +109,15 @@ export default function LatestScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        onRefresh={fetchLatestPosts}
-        refreshing={isLoading}
-        onEndReached={() => {
-          if (!isLoading) {
-            setCurrentPage((prev) => prev + 1);
-          }
-        }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
+        onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
           isLoading && posts.length > 0 ? (

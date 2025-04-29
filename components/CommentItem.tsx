@@ -8,6 +8,8 @@ import Markdown from "react-native-markdown-display";
 import CreateCommentForm from "./CreateCommentForm";
 import { deleteComment } from "../lib/api";
 import type { CommentData } from "../types/PostData";
+import { useRequireAuth } from "../lib/authUtils";
+import { useNavigation } from "@react-navigation/native";
 
 interface CommentItemProps {
   comment: CommentData;
@@ -24,8 +26,13 @@ export default function CommentItem({
   const { colors } = useTheme();
   const { userDetails } = useAuth();
 
+  const navigation = useNavigation();
+  const requireAuth = useRequireAuth();
+
   const handleReply = () => {
-    setIsReplying(!isReplying);
+    if (requireAuth(userDetails !== null, "reply to comments")) {
+      setIsReplying(!isReplying);
+    }
   };
 
   const handleDelete = async () => {

@@ -11,11 +11,33 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { useEffect } from "react";
 
 export default function ProfileScreen() {
-  const { userDetails, logout } = useAuth();
+  const { userDetails, logout, isLoggedIn } = useAuth();
   const navigation = useNavigation();
   const { colors, theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      Alert.alert(
+        "Authentication Required",
+        "You need to be logged in to view your profile.",
+        [
+          {
+            text: "Cancel",
+            onPress: () => navigation.goBack(),
+            style: "cancel",
+          },
+          {
+            text: "Login",
+            onPress: () => navigation.navigate("Login" as never),
+          },
+        ],
+        { cancelable: false }
+      );
+    }
+  }, [isLoggedIn, navigation]);
 
   const handleLogout = () => {
     Alert.alert(
