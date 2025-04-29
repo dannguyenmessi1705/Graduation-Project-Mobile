@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { getPosts } from "../lib/api";
+import { getPosts } from "../lib/apiService";
 import PostItem from "../components/PostItem";
 import { useTheme } from "../contexts/ThemeContext";
 import { useTopicContext } from "../contexts/TopicContext";

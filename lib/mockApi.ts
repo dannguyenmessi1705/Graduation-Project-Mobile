@@ -1,4 +1,3 @@
-import * as SecureStore from "expo-secure-store";
 import type { UserInfo } from "../types/UserData";
 import type { TopicData } from "../types/TopicData";
 import type { PostData, PostDetailData, CommentData } from "../types/PostData";
@@ -6,189 +5,16 @@ import type {
   NotificationResponse,
   Notification,
 } from "../types/NotificationData";
+import { mockUsers, mockTopics, mockPosts } from "./mockData";
 
-// Mock User Data
-const mockUsers: UserInfo[] = [
-  {
-    id: "1",
-    username: "johndoe",
-    email: "john@example.com",
-    firstName: "John",
-    lastName: "Doe",
-    gender: "Male",
-    birthDay: "1990-01-01",
-    country: "USA",
-    city: "New York",
-    phoneNumber: "+1234567890",
-    postalCode: "10001",
-    picture: "https://randomuser.me/api/portraits/men/1.jpg",
-  },
-  {
-    id: "2",
-    username: "janedoe",
-    email: "jane@example.com",
-    firstName: "Jane",
-    lastName: "Doe",
-    gender: "Female",
-    birthDay: "1992-05-15",
-    country: "Canada",
-    city: "Toronto",
-    phoneNumber: "+1987654321",
-    postalCode: "M5V 2A8",
-    picture: "https://randomuser.me/api/portraits/women/2.jpg",
-  },
-  {
-    id: "3",
-    username: "bobsmith",
-    email: "bob@example.com",
-    firstName: "Bob",
-    lastName: "Smith",
-    gender: "Male",
-    birthDay: "1985-08-22",
-    country: "UK",
-    city: "London",
-    phoneNumber: "+4412345678",
-    postalCode: "EC1A 1BB",
-    picture: "https://randomuser.me/api/portraits/men/3.jpg",
-  },
-];
-
-// Mock Topic Data
-const mockTopics: TopicData[] = [
-  {
-    id: "1",
-    name: "Programming",
-    description: "Discussions about programming languages and techniques",
-    totalPosts: 25,
-    totalComments: 120,
-  },
-  {
-    id: "2",
-    name: "Mobile Development",
-    description: "Mobile app development for iOS and Android",
-    totalPosts: 18,
-    totalComments: 87,
-  },
-  {
-    id: "3",
-    name: "Web Development",
-    description: "Frontend and backend web development topics",
-    totalPosts: 32,
-    totalComments: 156,
-  },
-  {
-    id: "4",
-    name: "UI/UX Design",
-    description: "User interface and experience design principles",
-    totalPosts: 15,
-    totalComments: 64,
-  },
-  {
-    id: "5",
-    name: "Machine Learning",
-    description: "AI and machine learning discussions",
-    totalPosts: 22,
-    totalComments: 95,
-  },
-];
-
-// Mock Post Data
-const mockPosts: PostData[] = [
-  {
-    id: "1",
-    title: "Getting started with React Native",
-    content:
-      "React Native is a great framework for building mobile apps. Here are some tips to get started...",
-    createdAt: "2025-04-20T10:30:00Z",
-    updatedAt: "2025-04-20T10:30:00Z",
-    author: { id: "1", username: "johndoe" },
-    totalComments: 5,
-    totalUpvotes: 12,
-    totalDownvotes: 2,
-    topicId: "2",
-    fileAttachments: [],
-  },
-  {
-    id: "2",
-    title: "Advanced TypeScript Patterns",
-    content:
-      "In this post, I'll share some advanced TypeScript patterns that can help improve your code...",
-    createdAt: "2025-04-18T14:22:00Z",
-    updatedAt: "2025-04-19T08:15:00Z",
-    author: { id: "2", username: "janedoe" },
-    totalComments: 8,
-    totalUpvotes: 24,
-    totalDownvotes: 1,
-    topicId: "1",
-    fileAttachments: ["https://example.com/files/typescript-cheatsheet.pdf"],
-  },
-  {
-    id: "3",
-    title: "CSS Grid vs Flexbox",
-    content:
-      "Comparing CSS Grid and Flexbox for modern layouts. When to use each one...",
-    createdAt: "2025-04-15T09:45:00Z",
-    updatedAt: "2025-04-15T09:45:00Z",
-    author: { id: "3", username: "bobsmith" },
-    totalComments: 12,
-    totalUpvotes: 18,
-    totalDownvotes: 3,
-    topicId: "3",
-    fileAttachments: ["https://example.com/files/css-examples.zip"],
-  },
-  {
-    id: "4",
-    title: "User Research Techniques",
-    content:
-      "Effective user research techniques to inform your design decisions...",
-    createdAt: "2025-04-12T16:20:00Z",
-    updatedAt: "2025-04-13T11:10:00Z",
-    author: { id: "2", username: "janedoe" },
-    totalComments: 6,
-    totalUpvotes: 15,
-    totalDownvotes: 0,
-    topicId: "4",
-    fileAttachments: [],
-  },
-  {
-    id: "5",
-    title: "Introduction to TensorFlow",
-    content:
-      "TensorFlow basics for beginners. Let's explore the fundamental concepts...",
-    createdAt: "2025-04-10T13:15:00Z",
-    updatedAt: "2025-04-10T13:15:00Z",
-    author: { id: "1", username: "johndoe" },
-    totalComments: 4,
-    totalUpvotes: 21,
-    totalDownvotes: 2,
-    topicId: "5",
-    fileAttachments: ["https://example.com/files/tensorflow-examples.ipynb"],
-  },
-];
-
-// Mock Post Detail Data
-const mockPostDetails: Record<string, PostDetailData> = {
-  "1": {
-    ...mockPosts[0],
-    // Add any additional fields specific to post detail
-  },
-  "2": {
-    ...mockPosts[1],
-    // Add any additional fields specific to post detail
-  },
-  "3": {
-    ...mockPosts[2],
-    // Add any additional fields specific to post detail
-  },
-  "4": {
-    ...mockPosts[3],
-    // Add any additional fields specific to post detail
-  },
-  "5": {
-    ...mockPosts[4],
-    // Add any additional fields specific to post detail
-  },
-};
+// Create mock post details from mock posts
+const mockPostDetails: Record<string, PostDetailData> = {};
+mockPosts.forEach((post) => {
+  mockPostDetails[post.id] = {
+    ...post,
+    // Add any additional fields specific to post detail if needed
+  };
+});
 
 // Mock Comment Data
 const mockComments: Record<string, CommentData[]> = {
@@ -196,8 +22,8 @@ const mockComments: Record<string, CommentData[]> = {
     {
       id: "1-1",
       content: "Great post! This helped me get started with React Native.",
-      createdAt: "2025-04-20T11:45:00Z",
-      updatedAt: "2025-04-20T11:45:00Z",
+      createdAt: "2023-04-20T11:45:00Z",
+      updatedAt: "2023-04-20T11:45:00Z",
       author: { id: "2", username: "janedoe" },
       postId: "1",
       replyToCommentId: null,
@@ -208,8 +34,8 @@ const mockComments: Record<string, CommentData[]> = {
       id: "1-2",
       content:
         "Do you have any recommendations for state management with React Native?",
-      createdAt: "2025-04-20T12:30:00Z",
-      updatedAt: "2025-04-20T12:30:00Z",
+      createdAt: "2023-04-20T12:30:00Z",
+      updatedAt: "2023-04-20T12:30:00Z",
       author: { id: "3", username: "bobsmith" },
       postId: "1",
       replyToCommentId: null,
@@ -219,8 +45,8 @@ const mockComments: Record<string, CommentData[]> = {
     {
       id: "1-3",
       content: "I'd recommend Redux or MobX, depending on your project size.",
-      createdAt: "2025-04-20T12:45:00Z",
-      updatedAt: "2025-04-20T12:45:00Z",
+      createdAt: "2023-04-20T12:45:00Z",
+      updatedAt: "2023-04-20T12:45:00Z",
       author: { id: "1", username: "johndoe" },
       postId: "1",
       replyToCommentId: "1-2",
@@ -233,8 +59,8 @@ const mockComments: Record<string, CommentData[]> = {
       id: "2-1",
       content:
         "I've been using TypeScript for years and learned some new tricks from this post!",
-      createdAt: "2025-04-18T15:10:00Z",
-      updatedAt: "2025-04-18T15:10:00Z",
+      createdAt: "2023-04-18T15:10:00Z",
+      updatedAt: "2023-04-18T15:10:00Z",
       author: { id: "3", username: "bobsmith" },
       postId: "2",
       replyToCommentId: null,
@@ -244,8 +70,8 @@ const mockComments: Record<string, CommentData[]> = {
     {
       id: "2-2",
       content: "Could you elaborate more on the utility types section?",
-      createdAt: "2025-04-18T16:22:00Z",
-      updatedAt: "2025-04-18T16:22:00Z",
+      createdAt: "2023-04-18T16:22:00Z",
+      updatedAt: "2023-04-18T16:22:00Z",
       author: { id: "1", username: "johndoe" },
       postId: "2",
       replyToCommentId: null,
@@ -258,8 +84,8 @@ const mockComments: Record<string, CommentData[]> = {
       id: "3-1",
       content:
         "I find Grid better for overall layouts and Flexbox better for component alignment.",
-      createdAt: "2025-04-15T10:20:00Z",
-      updatedAt: "2025-04-15T10:20:00Z",
+      createdAt: "2023-04-15T10:20:00Z",
+      updatedAt: "2023-04-15T10:20:00Z",
       author: { id: "1", username: "johndoe" },
       postId: "3",
       replyToCommentId: null,
@@ -271,8 +97,8 @@ const mockComments: Record<string, CommentData[]> = {
     {
       id: "4-1",
       content: "A/B testing has been incredibly valuable for our team.",
-      createdAt: "2025-04-12T18:05:00Z",
-      updatedAt: "2025-04-12T18:05:00Z",
+      createdAt: "2023-04-12T18:05:00Z",
+      updatedAt: "2023-04-12T18:05:00Z",
       author: { id: "3", username: "bobsmith" },
       postId: "4",
       replyToCommentId: null,
@@ -285,12 +111,54 @@ const mockComments: Record<string, CommentData[]> = {
       id: "5-1",
       content:
         "TensorFlow can be intimidating at first but this breaks it down nicely.",
-      createdAt: "2025-04-10T14:30:00Z",
-      updatedAt: "2025-04-10T14:30:00Z",
+      createdAt: "2023-04-10T14:30:00Z",
+      updatedAt: "2023-04-10T14:30:00Z",
       author: { id: "2", username: "janedoe" },
       postId: "5",
       replyToCommentId: null,
       totalUpvotes: 3,
+      totalDownvotes: 0,
+    },
+  ],
+  "6": [
+    {
+      id: "6-1",
+      content:
+        "This is exactly what I needed for setting up my CI/CD pipeline. Thanks!",
+      createdAt: "2023-04-05T13:15:00Z",
+      updatedAt: "2023-04-05T13:15:00Z",
+      author: { id: "4", username: "alicegreen" },
+      postId: "6",
+      replyToCommentId: null,
+      totalUpvotes: 5,
+      totalDownvotes: 0,
+    },
+  ],
+  "7": [
+    {
+      id: "7-1",
+      content:
+        "Great explanation of blockchain fundamentals. Very clear and concise.",
+      createdAt: "2023-03-28T11:20:00Z",
+      updatedAt: "2023-03-28T11:20:00Z",
+      author: { id: "1", username: "johndoe" },
+      postId: "7",
+      replyToCommentId: null,
+      totalUpvotes: 6,
+      totalDownvotes: 0,
+    },
+  ],
+  "8": [
+    {
+      id: "8-1",
+      content:
+        "The project organization tips are really helpful. I'm implementing them in my game right now.",
+      createdAt: "2023-03-22T10:45:00Z",
+      updatedAt: "2023-03-22T10:45:00Z",
+      author: { id: "5", username: "mikebrown" },
+      postId: "8",
+      replyToCommentId: null,
+      totalUpvotes: 4,
       totalDownvotes: 0,
     },
   ],
@@ -307,7 +175,7 @@ const mockNotifications: Notification[] = [
     type: "comment",
     link: "/posts/1",
     isRead: false,
-    createdAt: "2025-04-20T11:45:00Z",
+    createdAt: "2023-04-20T11:45:00Z",
     updatedAt: null,
   },
   {
@@ -318,7 +186,7 @@ const mockNotifications: Notification[] = [
     type: "upvote",
     link: "/posts/5",
     isRead: false,
-    createdAt: "2025-04-20T09:15:00Z",
+    createdAt: "2023-04-20T09:15:00Z",
     updatedAt: null,
   },
   {
@@ -330,8 +198,30 @@ const mockNotifications: Notification[] = [
     type: "reply",
     link: "/posts/2",
     isRead: true,
-    createdAt: "2025-04-19T14:30:00Z",
-    updatedAt: "2025-04-19T15:10:00Z",
+    createdAt: "2023-04-19T14:30:00Z",
+    updatedAt: "2023-04-19T15:10:00Z",
+  },
+  {
+    id: 4,
+    userId: "1",
+    title: "New Follower",
+    content: "Alice Green is now following you",
+    type: "follow",
+    link: "/users/4",
+    isRead: false,
+    createdAt: "2023-04-18T08:45:00Z",
+    updatedAt: null,
+  },
+  {
+    id: 5,
+    userId: "3",
+    title: "Post Mention",
+    content: "You were mentioned in a post by Mike Brown",
+    type: "mention",
+    link: "/posts/8",
+    isRead: false,
+    createdAt: "2023-04-17T16:30:00Z",
+    updatedAt: null,
   },
 ];
 

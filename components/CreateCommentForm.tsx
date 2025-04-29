@@ -7,7 +7,7 @@ import {
   Text,
 } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
-import { createComment } from "../lib/api";
+import { createComment } from "../lib/apiService";
 import Ionicons from "react-native-vector-icons/Ionicons";
 
 interface CreateCommentFormProps {

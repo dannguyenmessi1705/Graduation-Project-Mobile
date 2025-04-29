@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { getUserDetails, updateUserProfile } from "../lib/api";
+import { getUserDetails, updateUserProfile } from "../lib/apiService";
 import Toast from "react-native-toast-message";
 
 export default function EditProfileScreen() {

@@ -1,7 +1,7 @@
 import type React from "react";
 import { createContext, useState, useContext, useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
-import { getUserInfo } from "../lib/api";
+import { getUserInfo } from "../lib/apiService";
 import type { UserInfo } from "../types/UserData";
 import { Alert } from "react-native";
 

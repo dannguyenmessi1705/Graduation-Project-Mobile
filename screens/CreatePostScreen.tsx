@@ -15,7 +15,7 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../contexts/ThemeContext";
-import { createPost } from "../lib/api";
+import { createPost } from "../lib/apiService";
 import CreatePostAIHelper from "../components/CreatePostAIHelper";
 
 interface RouteParams {

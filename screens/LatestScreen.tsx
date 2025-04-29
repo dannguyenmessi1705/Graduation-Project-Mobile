@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { getLatestPosts } from "../lib/api";
+import { getLatestPosts } from "../lib/apiService";
 import PostItem from "../components/PostItem";
 import { useTheme } from "../contexts/ThemeContext";
 import type { PostData } from "../types/PostData";

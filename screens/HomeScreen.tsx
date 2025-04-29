@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { getTopics } from "../lib/api";
+import { getTopics } from "../lib/apiService";
 import TopicItem from "../components/TopicItem";
 import { useTheme } from "../contexts/ThemeContext";
 import type { TopicData } from "../types/TopicData";

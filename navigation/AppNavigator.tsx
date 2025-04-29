@@ -13,6 +13,7 @@ import AIChatScreen from "@/screens/AIChatScreen";
 import LoginScreen from "@/screens/LoginScreen";
 import RegisterScreen from "@/screens/RegisterScreen";
 import CreatePostScreen from "@/screens/CreatePostScreen";
+import DebugScreen from "@/screens/DebugScreen";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -96,6 +97,11 @@ export default function AppNavigator() {
         options={{ headerShown: false }}
       />
       <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen
+        name="Debug"
+        component={DebugScreen}
+        options={{ title: "Debug Environment" }}
+      />
     </Stack.Navigator>
   );
 }

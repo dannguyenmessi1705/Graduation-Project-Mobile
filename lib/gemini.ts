@@ -1,12 +1,10 @@
 import Constants from "expo-constants";
 
-const GEMINI_API_KEY = Constants.expoConfig?.extra?.GEMINI_API_KEY || "";
-const API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+import { GEMINI_API_KEY, API_GEMINI_URL } from "./env";
 
 export async function generateAIResponse(input: string): Promise<string> {
   try {
-    const response = await fetch(`${API_URL}?key=${GEMINI_API_KEY}`, {
+    const response = await fetch(`${API_GEMINI_URL}?key=${GEMINI_API_KEY}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

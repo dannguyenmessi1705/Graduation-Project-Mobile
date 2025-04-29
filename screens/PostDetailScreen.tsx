@@ -14,7 +14,7 @@ import {
   getPostComments,
   votePost,
   revokeVote,
-} from "../lib/api";
+} from "../lib/apiService";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 import Markdown from "react-native-markdown-display";

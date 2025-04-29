@@ -4,7 +4,7 @@ import type { TopicData } from "../types/TopicData";
 import type { PostData, PostDetailData, CommentData } from "../types/PostData";
 import type { NotificationResponse } from "../types/NotificationData";
 
-const API_BASE_URL = "http://api.forum.didan.id.vn/forum";
+import { API_BASE_URL } from "./env";
 
 export async function apiRequest(
   url: string,
@@ -268,4 +268,28 @@ export async function getCommentDetails(
   commentId: string
 ): Promise<{ data: any }> {
   return apiRequest(`${API_BASE_URL}/comments/${commentId}`);
+}
+
+export async function login(
+  username: string,
+  password: string
+): Promise<{ data: { access_token: string } }> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/users/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Invalid username or password");
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Login error:", error);
+    throw error;
+  }
 }

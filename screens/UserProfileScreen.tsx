@@ -8,7 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
-import { getUserDetails } from "../lib/api";
+import { getUserDetails } from "../lib/apiService";
 import { useTheme } from "../contexts/ThemeContext";
 import type { UserDetails } from "../types/UserData";
 import { useRequireAuth } from "../lib/authUtils";

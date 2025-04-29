@@ -339,6 +339,20 @@ export default function ProfileScreen() {
           <Ionicons name="chevron-forward" size={20} color={colors.mutedText} />
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.menuItem}
+          onPress={() => navigation.navigate("Debug" as never)}
+        >
+          <Ionicons
+            name="code-outline"
+            size={24}
+            color={colors.primary}
+            style={styles.menuIcon}
+          />
+          <Text style={styles.menuText}>Debug Environment</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.mutedText} />
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>

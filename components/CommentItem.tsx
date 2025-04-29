@@ -6,7 +6,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { formatDistanceToNow } from "date-fns";
 import Markdown from "react-native-markdown-display";
 import CreateCommentForm from "./CreateCommentForm";
-import { deleteComment } from "../lib/api";
+import { deleteComment } from "../lib/apiService";
 import type { CommentData } from "../types/PostData";
 import { useRequireAuth } from "../lib/authUtils";
 import { useNavigation } from "@react-navigation/native";

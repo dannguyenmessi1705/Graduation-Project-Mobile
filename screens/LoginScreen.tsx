@@ -11,16 +11,27 @@ import {
   ScrollView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { login } from "@/lib/apiService";
 import Toast from "react-native-toast-message";
+
+// Define the navigation type for LoginScreen
+type RootStackParamList = {
+  Main: undefined;
+  Register: undefined;
+  // Add other screens as needed
+};
+
+type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const navigation = useNavigation();
-  const { login } = useAuth();
+  const navigation = useNavigation<LoginScreenNavigationProp>();
+  const { login: authLogin } = useAuth();
   const { colors } = useTheme();
 
   const handleLogin = async () => {
@@ -36,29 +47,28 @@ export default function LoginScreen() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(
-        "http://api.forum.didan.id.vn/forum/users/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ username, password }),
-        }
-      );
+      const response = await login(username, password);
+      await authLogin(response.data.access_token);
+      Toast.show({
+        type: "success",
+        text1: "Login successful",
+        text2: "You have been successfully logged in.",
+      });
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Main" }],
+      });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        await login(data.data.access_token);
-        Toast.show({
-          type: "success",
-          text1: "Login successful",
-          text2: "You have been successfully logged in.",
-        });
-      } else {
-        throw new Error(data.status.message || "Login failed");
-      }
+      // if (response.ok) {
+      //   await login(data.data.access_token);
+      //   Toast.show({
+      //     type: "success",
+      //     text1: "Login successful",
+      //     text2: "You have been successfully logged in.",
+      //   });
+      // } else {
+      //   throw new Error(data.status.message || "Login failed");
+      // }
     } catch (error) {
       Toast.show({
         type: "error",
@@ -74,7 +84,7 @@ export default function LoginScreen() {
   };
 
   const navigateToRegister = () => {
-    navigation.navigate("Register" as never);
+    navigation.navigate("Register");
   };
 
   const styles = StyleSheet.create({
@@ -168,7 +178,12 @@ export default function LoginScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.content}>
           <View style={styles.logoContainer}>
-            <Text style={styles.logo}>Z'Forum</Text>
+            <TouchableOpacity
+              onLongPress={() => navigation.navigate("Debug" as never)}
+              delayLongPress={2000}
+            >
+              <Text style={styles.logo}>Z'Forum</Text>
+            </TouchableOpacity>
             <Text style={styles.tagline}>Connect with your community</Text>
           </View>
 
